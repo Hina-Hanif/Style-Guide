@@ -37,7 +37,8 @@ services:
       DATABASE_USER: style_guide_user
       DATABASE_PASSWORD: a_secure_password_for_dev
       # IMPORTANT: Add your Gemini API Key here or load it from a .env file
-      GEMINI_API_KEY: 'AIzaSyDmz0RXp1lQEt07lhbS766M56g3mIYvGVg'
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
     depends_on:
       - db
     restart: always
