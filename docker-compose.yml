@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:14-alpine
+    container_name: styleguide_postgres
+    # Volume to persist data even if the container is stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      # These must match the settings in your Django settings.py
+      POSTGRES_DB: style_guide_db_name
+      POSTGRES_USER: style_guide_user
+      POSTGRES_PASSWORD: a_secure_password_for_dev
+    # The default port is 5432, we expose it so you can connect locally with pgAdmin if needed
+    ports:
+      - "5432:5432"
+    restart: always
+
+  # 2. Django Application Service (using your Dockerfile)
+  web:
+    build: .
+    container_name: styleguide_django
+    command: sh -c "python manage.py makemigrations styleguide && python manage.py migrate && gunicorn ai_style_guide.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      # Map the current code directory into the container
+      - .:/app
+      # Volume for media files
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      # Set the HOST for the database to the name of the database service ('db')
+      DATABASE_HOST: db 
+      DATABASE_NAME: style_guide_db_name
+      DATABASE_USER: style_guide_user
+      DATABASE_PASSWORD: a_secure_password_for_dev
+      # IMPORTANT: Add your Gemini API Key here or load it from a .env file
+      GEMINI_API_KEY: 'AIzaSyDmz0RXp1lQEt07lhbS766M56g3mIYvGVg'
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  postgres_data:
+  media_data:
